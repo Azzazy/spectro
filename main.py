@@ -29,6 +29,8 @@ background_highlight_color = "#B2D7E3"
 
 root['bg'] = background_color
 
+globalObj = None
+
 
 class MyLabel(Label):
     def __init__(self, master, text, font=secondary_font, bg=background_color, width=0, height=0, fg='black', fill=X,
@@ -115,7 +117,16 @@ def inputScreen():
 
     rightFrame = MyFrame(botFrame, LEFT, padx=(0, 10))
     result = MyLabel(rightFrame, '0', bg='gray', side=TOP)
-    MyButton(rightFrame, 'Done', command=lambda: makeInput('clear'), side=TOP, fill=BOTH, width=1, pady=(0, 10))
+    MyButton(rightFrame, 'Done', command=lambda: sampleScreen(int(result['text'])), side=TOP, fill=BOTH, width=1,
+             pady=(0, 10))
+
+
+def sampleScreen(numberOfSamples=0):
+    for s in root.pack_slaves():
+        s.destroy()
+
+    topFrame = MyFrame(root, TOP)
+    MyLabel(topFrame, str(numberOfSamples) + ' samples')
 
 
 mainScreen()
