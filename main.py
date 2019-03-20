@@ -115,7 +115,7 @@ def inputScreen():
 
     rightFrame = MyFrame(botFrame, LEFT, padx=(0, 10))
     result = MyLabel(rightFrame, '0', bg='gray', side=TOP)
-    MyButton(rightFrame, 'Done', side=TOP, fill=BOTH, width=1, pady=(0, 10))
+    MyButton(rightFrame, 'Done', command=lambda: makeInput('clear'), side=TOP, fill=BOTH, width=1, pady=(0, 10))
 
 
 mainScreen()
