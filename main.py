@@ -4,9 +4,9 @@ import tkFont
 
 root = Tk()
 root.title('DK Machine')
-if root.winfo_screenwidth() == 320 and root.winfo_screenheight() == 240:
+if root.winfo_screenwidth() == 480 and root.winfo_screenheight() == 240:
     root.wm_attributes("-fullscreen", True)
-root.geometry('%dx%d+%d+%d' % (320, 240, 0, 0))
+root.geometry('%dx%d+%d+%d' % (480, 240, 0, 0))
 
 # root.rowconfigure(6, {'minsize': 40})
 # root.columnconfigure(8, {'minsize': 40})
