@@ -127,6 +127,7 @@ def sampleScreen(numberOfSamples=0):
 
     topFrame = MyFrame(root, TOP)
     MyLabel(topFrame, str(numberOfSamples) + ' samples')
+    MyLabel(topFrame, str(root.winfo_screenwidth()))
 
 
 mainScreen()
