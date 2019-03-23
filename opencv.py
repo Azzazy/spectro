@@ -4,13 +4,13 @@ from matplotlib import pyplot as plt
 from scipy.interpolate import interp1d
 
 max_rgb = [[], [], []]
-for i in range(9):
-    img = cv2.imread('pics2/sample 2 flash/pic' + str(i) + '.jpg')
+for i in range(4):
+    img = cv2.imread('pics/pic' + str(i) + '.jpg')
 
-    img = img[400:1100, 1200:1900]
+    img = img[750:1550, 1100:1900]
 
-    cv2.imshow("cropped", img)
-    cv2.waitKey(0)
+    # cv2.imshow("cropped", img)
+    # cv2.waitKey(0)
 
     # plt.title('known' + str(i))
     color = ('b', 'g', 'r')
@@ -21,7 +21,7 @@ for i in range(9):
     #
     # plt.show()
 
-x = [5000, 2000, 1000, 500, 100, 50, 10, 5, 0][::-1]
+x = [0, 5000, 2000, 1000]
 r = [i for i in max_rgb[0]]
 g = [i for i in max_rgb[1]]
 b = [i for i in max_rgb[2]]
@@ -34,14 +34,14 @@ b = [i for i in max_rgb[2]]
 
 
 # x = [0, 100, 500, 1000, 2000, 5000]
-y = b
+y = g
 # inter = interp1d(x, y, kind='cubic')
 inter = interp1d(x, y)
 xnew = np.arange(0, 5000, 50)
 ynew = inter(xnew)
 plt.figure()
 
-for i in range(9):
+for i in range(4):
     print y[i], x[i]
 plt.plot(x, y, 'x', xnew, ynew)
 plt.legend(['Samples', 'Interpolation'], loc='best')
