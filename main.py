@@ -77,6 +77,8 @@ def mainScreen():
         x=69, y=113, width=107, height=94)
     MyButton(frame, 'History', fill=BOTH, pack=False, width=10, pady=60, padx=(10, 20)).place(x=186, y=113, width=107,
                                                                                               height=94)
+    MyButton(frame, 'Settings', fill=BOTH, pack=False, width=10, pady=60, padx=(10, 20)).place(x=304, y=113, width=107,
+                                                                                               height=94)
 
 
 def inputScreen():
