@@ -42,13 +42,14 @@ class MyLabel(Label):
 
 class MyButton(Button):
     def __init__(self, master, text, command=None, type='normal', height=0, fill=X,
-                 expand=True, anchor=N, side=LEFT, font=primary_font, width=15, **kwargs):
+                 expand=True, anchor=N, side=LEFT, font=primary_font, width=15, pack=True, **kwargs):
         Button.__init__(self, master, text=text, command=command, height=height, fg='black', bd=0,
                         font=font, activeforeground='white')
         self['bg'] = self['activebackground'] = \
             {'normal': primary_color, 'accept': accept_color, 'reject': reject_color}[type]
         self['width'] = width
-        self.pack(fill=fill, expand=expand, anchor=anchor, side=side, **kwargs)
+        if pack:
+            self.pack(fill=fill, expand=expand, anchor=anchor, side=side, **kwargs)
 
 
 class MyFrame(Frame):
@@ -72,8 +73,10 @@ def mainScreen():
     for s in root.pack_slaves():
         s.destroy()
     frame = MyFrame(root, TOP)
-    MyButton(frame, 'New Test', command=inputScreen, fill=BOTH, width=10, pady=60, padx=(20, 10))
-    MyButton(frame, 'History', fill=BOTH, width=10, pady=60, padx=(10, 20))
+    MyButton(frame, 'New Test', command=inputScreen, fill=BOTH, pack=False, width=10, pady=60, padx=(20, 10)).place(
+        x=69, y=113, width=107, height=94)
+    MyButton(frame, 'History', fill=BOTH, pack=False, width=10, pady=60, padx=(10, 20)).place(x=186, y=113, width=107,
+                                                                                              height=94)
 
 
 def inputScreen():
