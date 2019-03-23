@@ -11,7 +11,7 @@ root.geometry('%dx%d+%d+%d' % (480, 320, 0, 0))
 # root.rowconfigure(6, {'minsize': 40})
 # root.columnconfigure(8, {'minsize': 40})
 
-primary_font = tkFont.Font(family='Roboto', size=12, weight='bold')
+primary_font = tkFont.Font(family='Roboto', size=12)#, weight='bold')
 secondary_font = tkFont.Font(family='Ubuntu Mono', size=20)
 secondary_font_roboto = tkFont.Font(family='Roboto', size=25)
 small_font_roboto = tkFont.Font(family='Roboto', size=15)
