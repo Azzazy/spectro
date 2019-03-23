@@ -11,7 +11,7 @@ root.geometry('%dx%d+%d+%d' % (480, 320, 0, 0))
 # root.rowconfigure(6, {'minsize': 40})
 # root.columnconfigure(8, {'minsize': 40})
 
-primary_font = tkFont.Font(family='Roboto', size=12)#, weight='bold')
+primary_font = tkFont.Font(family='Roboto', size=12)  # , weight='bold')
 secondary_font = tkFont.Font(family='Ubuntu Mono', size=20)
 secondary_font_roboto = tkFont.Font(family='Roboto', size=25)
 small_font_roboto = tkFont.Font(family='Roboto', size=15)
@@ -33,11 +33,13 @@ globalObj = None
 
 
 class MyLabel(Label):
-    def __init__(self, master, text, font=secondary_font, bg=background_color, width=0, height=0, fg='black', fill=X,
+    def __init__(self, master, text, font=secondary_font, bg=background_color, width=0, height=0, fg='black', pack=True,
+                 fill=X,
                  expand=True, anchor=N, side=LEFT, **kwargs):
         Label.__init__(self, master, text=text)
         self.config(bg=bg, fg=fg, font=font, width=width, height=height)
-        self.pack(fill=fill, expand=expand, anchor=anchor, side=side, **kwargs)
+        if pack:
+            self.pack(fill=fill, expand=expand, anchor=anchor, side=side, **kwargs)
 
 
 class MyButton(Button):
@@ -96,34 +98,41 @@ def inputScreen():
         if result['text'] == '':
             result['text'] = '0'
 
-    topFrame = MyFrame(root, TOP)
-    MyLabel(topFrame, 'How many samples?')
+    MyLabel(root, 'How many samples?', pack=False).place(x=69, y=10, width=342, height=41)
 
-    botFrame = MyFrame(root, TOP)
-    leftFrame = MyFrame(botFrame, LEFT)
-    leftFrame1 = MyFrame(leftFrame, LEFT, padx=(10, 5))
-    leftFrame2 = MyFrame(leftFrame, LEFT, padx=(0, 5))
-    leftFrame3 = MyFrame(leftFrame, LEFT, padx=(0, 10))
-    MyButton(leftFrame1, '7', command=lambda: makeInput('7'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 5))
-    MyButton(leftFrame1, '4', command=lambda: makeInput('4'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 5))
-    MyButton(leftFrame1, '1', command=lambda: makeInput('1'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 5))
-    MyButton(leftFrame1, 'clear', command=lambda: makeInput('clear'), type='accept', side=TOP, fill=BOTH, width=1,
-             pady=(0, 10))
+    MyButton(root, '7', command=lambda: makeInput('7'), type='accept', pack=False).place(x=10, y=62, width=49,
+                                                                                         height=41)
+    MyButton(root, '4', command=lambda: makeInput('4'), type='accept', pack=False).place(x=10, y=113, width=49,
+                                                                                         height=41)
+    MyButton(root, '1', command=lambda: makeInput('1'), type='accept', pack=False).place(x=10, y=165, width=49,
+                                                                                         height=41)
+    MyButton(root, 'clear', command=lambda: makeInput('clear'), type='accept', pack=False).place(x=10, y=217,
+                                                                                                 width=49,
+                                                                                                 height=41)
 
-    MyButton(leftFrame2, '8', command=lambda: makeInput('8'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 5))
-    MyButton(leftFrame2, '5', command=lambda: makeInput('5'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 5))
-    MyButton(leftFrame2, '2', command=lambda: makeInput('2'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 5))
-    MyButton(leftFrame2, '0', command=lambda: makeInput('0'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 10))
+    MyButton(root, '8', command=lambda: makeInput('8'), type='accept', pack=False).place(x=69, y=62, width=49,
+                                                                                         height=41)
+    MyButton(root, '5', command=lambda: makeInput('5'), type='accept', pack=False).place(x=69, y=113, width=49,
+                                                                                         height=41)
+    MyButton(root, '2', command=lambda: makeInput('2'), type='accept', pack=False).place(x=69, y=165, width=49,
+                                                                                         height=41)
+    MyButton(root, '0', command=lambda: makeInput('0'), type='accept', pack=False).place(x=69, y=217, width=49,
+                                                                                         height=41)
 
-    MyButton(leftFrame3, '9', command=lambda: makeInput('9'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 5))
-    MyButton(leftFrame3, '6', command=lambda: makeInput('6'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 5))
-    MyButton(leftFrame3, '3', command=lambda: makeInput('3'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 5))
-    MyButton(leftFrame3, '<', command=lambda: makeInput('<'), type='accept', side=TOP, fill=BOTH, width=1, pady=(0, 10))
+    MyButton(root, '9', command=lambda: makeInput('9'), type='accept', pack=False).place(x=128, y=62, width=49,
+                                                                                         height=41)
+    MyButton(root, '6', command=lambda: makeInput('6'), type='accept', pack=False).place(x=128, y=113, width=49,
+                                                                                         height=41)
+    MyButton(root, '3', command=lambda: makeInput('3'), type='accept', pack=False).place(x=128, y=165, width=49,
+                                                                                         height=41)
+    MyButton(root, '<', command=lambda: makeInput('<'), type='accept', pack=False).place(x=128, y=217, width=49,
+                                                                                         height=41)
 
-    rightFrame = MyFrame(botFrame, LEFT, padx=(0, 10))
-    result = MyLabel(rightFrame, '0', bg='gray', side=TOP)
-    MyButton(rightFrame, 'Done', command=lambda: sampleScreen(int(result['text'])), side=TOP, fill=BOTH, width=1,
-             pady=(0, 10))
+    result = MyLabel(root, '0', bg='gray', pack=False)
+    result.place(x=245, y=62, width=225, height=41)
+    MyButton(root, 'Done', command=lambda: sampleScreen(int(result['text'])), pack=False).place(x=363, y=268,
+                                                                                                width=107,
+                                                                                                height=41)
 
 
 def sampleScreen(numberOfSamples=0):
