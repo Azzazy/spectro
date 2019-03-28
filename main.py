@@ -2,6 +2,7 @@ from Tkinter import *
 import ttk
 import tkFont
 import os
+import json
 
 mainWindow = Tk()
 mainWindow.title('DK Machine')
@@ -29,9 +30,11 @@ reject_color = '#C51C3A'
 background_color = "white"
 background_highlight_color = "#B2D7E3"
 
+btn_bg = '#2D9CDB'
 btn_numbers_bg = '#6FCF97'
 btn_capture_no = '#EB5757'
 btn_capture_ok = '#219653'
+sample_bg = '#F2F2F2'
 mainWindow['bg'] = background_color
 
 
@@ -47,6 +50,16 @@ def capture(file_name):
         os.system('raspistill -q 100 -o ' + str(file_name) + '.jpg')
     else:
         os.system('echo working > ' + str(file_name) + '.txt')
+
+
+def write_conc(data):
+    with open('conc.txt', 'wb+') as dump:
+        dump.write(json.dumps(data))
+
+
+def read_conc():
+    source = open('conc.txt', 'rb').read()
+    return json.loads(source)
 
 
 class Wdg(object):
@@ -70,16 +83,19 @@ root = Frm(0, 0, 480, 320, mainWindow)
 
 
 class Lbl(Label, Wdg):
-    def __init__(self, x, y, width, height, text, master=root, bg=background_color, font=primary_font, place=True):
+    def __init__(self, x, y, width, height, text, master=root, bg=None, font=primary_font, place=True):
+        bg = master['bg'] if bg is None else bg
         Label.__init__(self, master, text=text)
         self.config(bg=bg, fg='black', font=font)
         Wdg.__init__(self, x, y, width, height, place)
 
 
 class Btn(Button, Wdg):
-    def __init__(self, x, y, width, height, text, command, master=root, bg=primary_color, font=primary_font,
+    def __init__(self, x, y, width, height, text, command, master=root, bg=None, font=primary_font,
                  place=True):
-        Button.__init__(self, master, text=text, command=command, fg='black', bd=0, font=font, activeforeground='white',
+        bg = master['bg'] if bg is None else bg
+        Button.__init__(self, master, text=text, command=command, fg='black', highlightthickness=0, bd=0, font=font,
+                        activeforeground='white',
                         bg=bg, activebackground=bg)
         Wdg.__init__(self, x, y, width, height, place)
 
@@ -114,7 +130,7 @@ class InputScreen(object):
         Btn(128, 165, 49, 41, '3', lambda: makeInput('3'), InputScreen.inst, bg=btn_numbers_bg)
         Btn(128, 217, 49, 41, '<', lambda: makeInput('<'), InputScreen.inst, bg=btn_numbers_bg)
         InputScreen.inst.result = Lbl(245, 62, 225, 41, '0', InputScreen.inst, bg='gray')
-        Btn(363, 268, 107, 41, 'Done', InputScreen.do_cb, InputScreen.inst)
+        Btn(363, 268, 107, 41, 'Done', InputScreen.do_cb, InputScreen.inst, bg=btn_bg)
         InputScreen.inst.place_forget()
 
     @staticmethod
@@ -136,34 +152,40 @@ class InputScreen(object):
 
 
 class Sample(Frm):
-    def __init__(self, x, y, sample_number):
+    def __init__(self, x, y, sample_number, cb):
         def update_conc(new_val):
             self.conc['text'] = new_val
+            self.conc['bg'] = self.conc['activebackground'] = sample_bg
+            self.conc_done = True
+            self.cb()
 
         def update_btn_capture():
             capture(sample_number)
             self.btn_capture['text'] = 'OK'
             self.btn_capture['bg'] = self.btn_capture['activebackground'] = btn_capture_ok
+            self.capture_done = True
+            self.cb()
 
-        Frm.__init__(self, x, y, 49, 145, root)
-        self.sample_number = sample_number
+        Frm.__init__(self, x, y, 49, 145, root, bg=sample_bg)
+        self.sample_number, self.cb, self.capture_done, self.conc_done = sample_number, cb, False, False
         Lbl(0, 0, 49, 42, '#' + str(sample_number), self)
-        self.conc = Btn(0, 52, 49, 42, '0', lambda: InputScreen.get('Concentration ?', update_conc, self.conc['text']),
-                        self)
+        self.conc = Btn(0, 52, 49, 52, '0', lambda: InputScreen.get('Concentration ?', update_conc, self.conc['text']),
+                        self, bg=btn_capture_no)
         self.btn_capture = Btn(0, 104, 49, 42, 'Capture', update_btn_capture, self, bg=btn_capture_no,
                                font=btn_capture_text)
 
     def get_conc(self):
         return int(self.conc['text'])
 
-    def capture_ok(self):
-        return self.btn_capture['text'] == 'OK'
+    def is_done(self):
+        return self.conc_done and self.capture_done
 
 
 class SampleCollection(object):
-    def __init__(self, number_of_samples):
+    def __init__(self, number_of_samples, cb):
         self.number_of_samples = number_of_samples
-        self.samples = [Sample(69 + sample_number * 59, 62, sample_number + 1) for sample_number in
+        self.cb = cb
+        self.samples = [Sample(69 + sample_number * 59, 62, sample_number + 1, cb) for sample_number in
                         range(number_of_samples)]
         self.position = 0
 
@@ -183,28 +205,36 @@ class SampleCollection(object):
     def get_conc(self):
         return map(lambda sample: sample.get_conc(), self.samples)
 
+    def count_done(self):
+        return len(filter(lambda sample: sample.is_done(), self.samples))
+
 
 def mainScreen():
     for s in root.place_slaves():
         s.destroy()
-    Btn(69, 113, 107, 94, 'New Test', lambda: InputScreen.get('How many samples?', sampleScreen))
-    Btn(186, 113, 107, 94, 'History', None)
-    Btn(304, 113, 107, 94, 'Settings', None)
+    Btn(69, 113, 107, 94, 'New Test', lambda: InputScreen.get('How many samples?', sampleScreen), bg=btn_bg)
+    Btn(186, 113, 107, 94, 'History', None, bg=btn_bg)
+    Btn(304, 113, 107, 94, 'Settings', None, bg=btn_bg)
 
 
 def sampleScreen(number_of_samples=0):
     for s in root.place_slaves():
         s.destroy()
 
-    Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(number_of_samples) + ')')
-    samples = SampleCollection(number_of_samples)
-
     def print_conc():
-        print samples.get_conc()
+        write_conc(samples.get_conc())
 
-    Btn(421, 62, 49, 145, '>', samples.move_right)
-    Btn(10, 62, 49, 145, '<', samples.move_left)
-    Btn(363, 268, 107, 41, 'Done', print_conc)
+    def update_controls():
+        done_count = samples.count_done()
+        title['text'] = 'Capture samples (' + str(done_count) + '/' + str(number_of_samples) + ')'
+        if done_count == number_of_samples:
+            Btn(363, 268, 107, 41, 'Done', print_conc, bg=btn_bg)
+
+    title = Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(number_of_samples) + ')')
+    samples = SampleCollection(number_of_samples, update_controls)
+
+    Btn(421, 62, 49, 145, '>', samples.move_right, bg=btn_bg)
+    Btn(10, 62, 49, 145, '<', samples.move_left, bg=btn_bg)
 
 
 InputScreen.prepare()
