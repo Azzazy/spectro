@@ -31,6 +31,7 @@ background_highlight_color = "#B2D7E3"
 
 btn_numbers_bg = '#6FCF97'
 btn_capture_no = '#EB5757'
+btn_capture_ok = '#219653'
 mainWindow['bg'] = background_color
 
 
@@ -134,6 +135,55 @@ class InputScreen(object):
             InputScreen.inst.cb(int(InputScreen.inst.result['text']))
 
 
+class Sample(Frm):
+    def __init__(self, x, y, sample_number):
+        def update_conc(new_val):
+            self.conc['text'] = new_val
+
+        def update_btn_capture():
+            capture(sample_number)
+            self.btn_capture['text'] = 'OK'
+            self.btn_capture['bg'] = self.btn_capture['activebackground'] = btn_capture_ok
+
+        Frm.__init__(self, x, y, 49, 145, root)
+        self.sample_number = sample_number
+        Lbl(0, 0, 49, 42, '#' + str(sample_number), self)
+        self.conc = Btn(0, 52, 49, 42, '0', lambda: InputScreen.get('Concentration ?', update_conc, self.conc['text']),
+                        self)
+        self.btn_capture = Btn(0, 104, 49, 42, 'Capture', update_btn_capture, self, bg=btn_capture_no,
+                               font=btn_capture_text)
+
+    def get_conc(self):
+        return int(self.conc['text'])
+
+    def capture_ok(self):
+        return self.btn_capture['text'] == 'OK'
+
+
+class SampleCollection(object):
+    def __init__(self, number_of_samples):
+        self.number_of_samples = number_of_samples
+        self.samples = [Sample(69 + sample_number * 59, 62, sample_number + 1) for sample_number in
+                        range(number_of_samples)]
+        self.position = 0
+
+        def pos_add(x):
+            self.position += x
+
+        self.move_right = lambda: [pos_add(-1), self.update_locations()]
+        self.move_left = lambda: [pos_add(1), self.update_locations()]
+
+    def update_locations(self):
+        if self.number_of_samples < 7: self.position = 0
+        if self.position > 0: self.position = 0
+        if 6 - self.number_of_samples > self.position: self.position += 1
+        for sample in self.samples:
+            sample.do_place(69 + (self.position + sample.sample_number - 1) * 59)
+
+    def get_conc(self):
+        return map(lambda sample: sample.get_conc(), self.samples)
+
+
 def mainScreen():
     for s in root.place_slaves():
         s.destroy()
@@ -142,22 +192,19 @@ def mainScreen():
     Btn(304, 113, 107, 94, 'Settings', None)
 
 
-def sampleScreen(numberOfSamples=0):
+def sampleScreen(number_of_samples=0):
     for s in root.place_slaves():
         s.destroy()
 
-    Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(numberOfSamples) + ')')
+    Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(number_of_samples) + ')')
+    samples = SampleCollection(number_of_samples)
 
-    sample_number = 1
-    frame = Frm(69, 62, 49, 145, root)
-    Lbl(0, 0, 49, 42, '#' + str(sample_number), frame)
-    conc = None
+    def print_conc():
+        print samples.get_conc()
 
-    def updateConc(newVal):
-        conc['text'] = newVal
-
-    conc = Btn(0, 52, 49, 42, '0', lambda: InputScreen.get('Concentration ?', updateConc, conc['text']), frame)
-    Btn(0, 104, 49, 42, 'Capture', lambda: capture(sample_number), frame, bg=btn_capture_no, font=btn_capture_text)
+    Btn(421, 62, 49, 145, '>', samples.move_right)
+    Btn(10, 62, 49, 145, '<', samples.move_left)
+    Btn(363, 268, 107, 41, 'Done', print_conc)
 
 
 InputScreen.prepare()
