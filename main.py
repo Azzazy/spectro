@@ -1,12 +1,13 @@
 from Tkinter import *
 import ttk
 import tkFont
+import os
 
-root = Tk()
-root.title('DK Machine')
-if root.winfo_screenwidth() == 480 and root.winfo_screenheight() == 320:
-    root.wm_attributes("-fullscreen", True)
-root.geometry('%dx%d+%d+%d' % (480, 320, 0, 0))
+mainWindow = Tk()
+mainWindow.title('DK Machine')
+if mainWindow.winfo_screenwidth() == 480 and mainWindow.winfo_screenheight() == 320:
+    mainWindow.wm_attributes("-fullscreen", True)
+mainWindow.geometry('%dx%d+%d+%d' % (480, 320, 0, 0))
 
 # root.rowconfigure(6, {'minsize': 40})
 # root.columnconfigure(8, {'minsize': 40})
@@ -18,7 +19,8 @@ small_font_roboto = tkFont.Font(family='Roboto', size=15)
 smaller_font_roboto = tkFont.Font(family='Roboto', size=11)
 test_font = tkFont.Font(family='Ubuntu Mono', size=25)
 info_font = tkFont.Font(family='Ubuntu Mono', size=11)
-small_font = tkFont.Font(family='Ubuntu Mono', size=13)
+
+btn_capture_text = tkFont.Font(family='Roboto', size=8)
 
 primary_color = '#2D9CDB'
 accept_color = '#6FCF97'
@@ -29,9 +31,21 @@ background_highlight_color = "#B2D7E3"
 
 btn_numbers_bg = '#6FCF97'
 btn_capture_no = '#EB5757'
-root['bg'] = background_color
+mainWindow['bg'] = background_color
 
-globalObj = None
+
+def can_capture():
+    cmd = 'if raspistill -n true 2>/dev/null; then \necho 1 \nelse \necho 0 \nfi'
+    if int(os.popen(cmd).readlines()[0]) == 1:
+        return True
+    return False
+
+
+def capture(file_name):
+    if can_capture():
+        os.system('raspistill -q 100 -o ' + str(file_name) + '.jpg')
+    else:
+        os.system('echo working > ' + str(file_name) + '.txt')
 
 
 class Wdg(object):
@@ -46,9 +60,12 @@ class Wdg(object):
 
 
 class Frm(Frame, Wdg):
-    def __init__(self, x, y, width, height, master=root, bg=background_color, place=True):
+    def __init__(self, x, y, width, height, master, bg=background_color, place=True):
         Frame.__init__(self, master, bg=bg)
         Wdg.__init__(self, x, y, width, height, place)
+
+
+root = Frm(0, 0, 480, 320, mainWindow)
 
 
 class Lbl(Label, Wdg):
@@ -66,44 +83,63 @@ class Btn(Button, Wdg):
         Wdg.__init__(self, x, y, width, height, place)
 
 
+class InputScreen(object):
+    inst = None
+
+    @staticmethod
+    def prepare():
+        def makeInput(value):
+            if value == 'clear':
+                InputScreen.inst.result['text'] = ''
+            elif value == '<':
+                InputScreen.inst.result['text'] = InputScreen.inst.result['text'][:-1]
+            else:
+                InputScreen.inst.result['text'] = str(int(InputScreen.inst.result['text'] + str(value)))
+            if InputScreen.inst.result['text'] == '':
+                InputScreen.inst.result['text'] = '0'
+
+        InputScreen.inst = Frm(0, 0, 480, 320, mainWindow)
+        InputScreen.inst.title = Lbl(69, 10, 342, 41, 'Empty Input Screen', InputScreen.inst)
+        Btn(10, 62, 49, 41, '7', lambda: makeInput('7'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(10, 113, 49, 41, '4', lambda: makeInput('4'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(10, 165, 49, 41, '1', lambda: makeInput('1'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(10, 217, 49, 41, 'clear', lambda: makeInput('clear'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(69, 62, 49, 41, '8', lambda: makeInput('8'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(69, 113, 49, 41, '5', lambda: makeInput('5'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(69, 165, 49, 41, '2', lambda: makeInput('2'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(69, 217, 49, 41, '0', lambda: makeInput('0'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(128, 62, 49, 41, '9', lambda: makeInput('9'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(128, 113, 49, 41, '6', lambda: makeInput('6'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(128, 165, 49, 41, '3', lambda: makeInput('3'), InputScreen.inst, bg=btn_numbers_bg)
+        Btn(128, 217, 49, 41, '<', lambda: makeInput('<'), InputScreen.inst, bg=btn_numbers_bg)
+        InputScreen.inst.result = Lbl(245, 62, 225, 41, '0', InputScreen.inst, bg='gray')
+        Btn(363, 268, 107, 41, 'Done', InputScreen.do_cb, InputScreen.inst)
+        InputScreen.inst.place_forget()
+
+    @staticmethod
+    def get(title, cb, val='0'):
+        if InputScreen.inst is None:
+            InputScreen.prepare()
+        InputScreen.inst.cb = cb
+        InputScreen.inst.result['text'] = str(val)
+        InputScreen.inst.title['text'] = title
+        root.place_forget()
+        InputScreen.inst.do_place()
+
+    @staticmethod
+    def do_cb():
+        InputScreen.inst.place_forget()
+        root.do_place()
+        if InputScreen.inst.cb is not None:
+            InputScreen.inst.cb(int(InputScreen.inst.result['text']))
+
+
 def mainScreen():
     for s in root.place_slaves():
         s.destroy()
-    Btn(69, 113, 107, 94, 'New Test', inputScreen)
+    Btn(69, 113, 107, 94, 'New Test', lambda: InputScreen.get('How many samples?', sampleScreen))
     Btn(186, 113, 107, 94, 'History', None)
     Btn(304, 113, 107, 94, 'Settings', None)
-
-
-def inputScreen():
-    for s in root.place_slaves():
-        s.destroy()
-    result = None
-
-    def makeInput(value):
-        if value == 'clear':
-            result['text'] = ''
-        elif value == '<':
-            result['text'] = result['text'][:-1]
-        else:
-            result['text'] = str(int(result['text'] + str(value)))
-        if result['text'] == '':
-            result['text'] = '0'
-
-    Lbl(69, 10, 342, 41, 'How many samples?')
-    Btn(10, 62, 49, 41, '7', lambda: makeInput('7'), bg=btn_numbers_bg)
-    Btn(10, 113, 49, 41, '4', lambda: makeInput('4'), bg=btn_numbers_bg)
-    Btn(10, 165, 49, 41, '1', lambda: makeInput('1'), bg=btn_numbers_bg)
-    Btn(10, 217, 49, 41, 'clear', lambda: makeInput('clear'), bg=btn_numbers_bg)
-    Btn(69, 62, 49, 41, '8', lambda: makeInput('8'), bg=btn_numbers_bg)
-    Btn(69, 113, 49, 41, '5', lambda: makeInput('5'), bg=btn_numbers_bg)
-    Btn(69, 165, 49, 41, '2', lambda: makeInput('2'), bg=btn_numbers_bg)
-    Btn(69, 217, 49, 41, '0', lambda: makeInput('0'), bg=btn_numbers_bg)
-    Btn(128, 62, 49, 41, '9', lambda: makeInput('9'), bg=btn_numbers_bg)
-    Btn(128, 113, 49, 41, '6', lambda: makeInput('6'), bg=btn_numbers_bg)
-    Btn(128, 165, 49, 41, '3', lambda: makeInput('3'), bg=btn_numbers_bg)
-    Btn(128, 217, 49, 41, '<', lambda: makeInput('<'), bg=btn_numbers_bg)
-    result = Lbl(245, 62, 225, 41, '0', bg='gray')
-    Btn(363, 268, 107, 41, 'Done', lambda: sampleScreen(int(result['text'])))
 
 
 def sampleScreen(numberOfSamples=0):
@@ -111,12 +147,20 @@ def sampleScreen(numberOfSamples=0):
         s.destroy()
 
     Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(numberOfSamples) + ')')
-    frame = Frm(69, 62, 49, 145)
-    Lbl(0, 0, 49, 42, '#1', frame)
-    Btn(0, 52, 49, 42, '0', None, frame)
-    Btn(0, 104, 49, 42, 'Capture', None, frame, bg=btn_capture_no)
+
+    sample_number = 1
+    frame = Frm(69, 62, 49, 145, root)
+    Lbl(0, 0, 49, 42, '#' + str(sample_number), frame)
+    conc = None
+
+    def updateConc(newVal):
+        conc['text'] = newVal
+
+    conc = Btn(0, 52, 49, 42, '0', lambda: InputScreen.get('Concentration ?', updateConc, conc['text']), frame)
+    Btn(0, 104, 49, 42, 'Capture', lambda: capture(sample_number), frame, bg=btn_capture_no, font=btn_capture_text)
 
 
+InputScreen.prepare()
 mainScreen()
 if __name__ == "__main__":
-    root.mainloop()
+    mainWindow.mainloop()
