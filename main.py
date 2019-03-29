@@ -4,6 +4,14 @@ import tkFont
 import os
 import json
 
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+from scipy.interpolate import interp1d
+
+import matplotlib.backends.tkagg as tkagg
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+
 mainWindow = Tk()
 mainWindow.title('DK Machine')
 if mainWindow.winfo_screenwidth() == 480 and mainWindow.winfo_screenheight() == 320:
@@ -35,6 +43,9 @@ btn_numbers_bg = '#6FCF97'
 btn_capture_no = '#EB5757'
 btn_capture_ok = '#219653'
 sample_bg = '#F2F2F2'
+btn_red = '#DB2D2D'
+btn_green = '#6FDB2D'
+btn_blue = '#2F55D9'
 mainWindow['bg'] = background_color
 
 
@@ -221,14 +232,15 @@ def sampleScreen(number_of_samples=0):
     for s in root.place_slaves():
         s.destroy()
 
-    def print_conc():
+    def done():
         write_conc(samples.get_conc())
+        graph_screen()
 
     def update_controls():
         done_count = samples.count_done()
         title['text'] = 'Capture samples (' + str(done_count) + '/' + str(number_of_samples) + ')'
         if done_count == number_of_samples:
-            Btn(363, 268, 107, 41, 'Done', print_conc, bg=btn_bg)
+            Btn(363, 268, 107, 41, 'Done', done, bg=btn_bg)
 
     title = Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(number_of_samples) + ')')
     samples = SampleCollection(number_of_samples, update_controls)
@@ -237,7 +249,77 @@ def sampleScreen(number_of_samples=0):
     Btn(10, 62, 49, 145, '<', samples.move_left, bg=btn_bg)
 
 
+def draw_figure(canvas, figure, loc=(0, 0)):
+    figure_canvas_agg = FigureCanvasAgg(figure)
+    figure_canvas_agg.draw()
+    figure_x, figure_y, figure_w, figure_h = figure.bbox.bounds
+    figure_w, figure_h = int(figure_w), int(figure_h)
+    photo = PhotoImage(master=canvas, width=figure_w, height=figure_h)
+    canvas.create_image(loc[0] + figure_w / 2, loc[1] + figure_h / 2, image=photo)
+    tkagg.blit(photo, figure_canvas_agg.get_renderer()._renderer, colormode=2)
+    return photo
+
+
+def opencv_test():
+    conc = read_conc()
+    max_rgb = [[], [], []]
+    for i in range(len(conc)):
+        img = cv2.imread('pics/pic' + str(i) + '.jpg')
+        img = img[750:1550, 1100:1900]
+        # cv2.imshow("cropped", img)
+        # cv2.waitKey(0)
+        color = ('b', 'g', 'r')
+        for i, col in enumerate(color):
+            hist = cv2.calcHist([img], [i], None, [256], [0, 256])
+            max_rgb[i].append(np.argmax(hist))
+
+    x = conc
+    r = max_rgb[0]
+    g = max_rgb[1]
+    b = max_rgb[2]
+    figs = []
+    for i in [r, g, b]:
+        fig = plt.figure(figsize=(4.6, 1.96))
+        fig.add_axes(plt.axes()).scatter(x, i)
+        fig.tight_layout()
+        figs.append(fig)
+    return figs
+
+
+img = None
+
+
+def graph_screen():
+    for s in root.place_slaves():
+        s.destroy()
+
+    def measure_samples():
+        pass
+
+    def color_red():
+        global img
+        img = draw_figure(canvas, figs[0])
+
+    def color_green():
+        global img
+        img = draw_figure(canvas, figs[1])
+
+    def color_blue():
+        global img
+        img = draw_figure(canvas, figs[2])
+
+    Lbl(69, 10, 342, 42, 'Choose most suitable color graph')
+    Btn(363, 268, 107, 41, 'Measure samples', measure_samples, bg=btn_bg, font=btn_capture_text)
+    Btn(10, 268, 49, 42, 'Red', color_red, bg=btn_red, font=btn_capture_text)
+    Btn(69, 268, 49, 42, 'Green', color_green, bg=btn_green, font=btn_capture_text)
+    Btn(128, 268, 49, 42, 'Blue', color_blue, bg=btn_blue, font=btn_capture_text)
+    canvas = Canvas(root)
+    canvas.place(x=10, y=62, width=460, height=196)
+    figs = opencv_test()
+
+
 InputScreen.prepare()
 mainScreen()
+# graph_screen()
 if __name__ == "__main__":
     mainWindow.mainloop()
