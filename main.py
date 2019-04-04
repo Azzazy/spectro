@@ -42,6 +42,7 @@ btn_bg = '#2D9CDB'
 btn_numbers_bg = '#6FCF97'
 btn_capture_no = '#EB5757'
 btn_capture_ok = '#219653'
+btn_concentration = '#F2F2F2'
 sample_bg = '#F2F2F2'
 btn_red = '#DB2D2D'
 btn_green = '#6FDB2D'
@@ -240,13 +241,16 @@ def sampleScreen(number_of_samples=0):
         done_count = samples.count_done()
         title['text'] = 'Capture samples (' + str(done_count) + '/' + str(number_of_samples) + ')'
         if done_count == number_of_samples:
-            Btn(363, 268, 107, 41, 'Done', done, bg=btn_bg)
+            Btn(363, 268, 107, 41, 'Save & Continue', done, bg=btn_bg)
 
     title = Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(number_of_samples) + ')')
     samples = SampleCollection(number_of_samples, update_controls)
 
     Btn(421, 62, 49, 145, '>', samples.move_right, bg=btn_bg)
     Btn(10, 62, 49, 145, '<', samples.move_left, bg=btn_bg)
+
+
+unknown_sample = None
 
 
 def draw_figure(canvas, figure, loc=(0, 0)):
@@ -286,6 +290,10 @@ def opencv_test():
     return figs
 
 
+def get_conc_unknown_sample():
+    return 5
+
+
 img = None
 
 
@@ -294,7 +302,7 @@ def graph_screen():
         s.destroy()
 
     def measure_samples():
-        pass
+        measure_screen()
 
     def color_red():
         global img
@@ -309,7 +317,7 @@ def graph_screen():
         img = draw_figure(canvas, figs[2])
 
     Lbl(69, 10, 342, 42, 'Choose most suitable color graph')
-    Btn(363, 268, 107, 41, 'Measure samples', measure_samples, bg=btn_bg, font=btn_capture_text)
+    Btn(363, 268, 107, 41, 'Measure sample', measure_samples, bg=btn_bg, font=btn_capture_text)
     Btn(10, 268, 49, 42, 'Red', color_red, bg=btn_red, font=btn_capture_text)
     Btn(69, 268, 49, 42, 'Green', color_green, bg=btn_green, font=btn_capture_text)
     Btn(128, 268, 49, 42, 'Blue', color_blue, bg=btn_blue, font=btn_capture_text)
@@ -318,8 +326,39 @@ def graph_screen():
     figs = opencv_test()
 
 
+def measure_screen():
+    for s in root.place_slaves():
+        s.destroy()
+
+    def update_conc():
+        global unknown_sample
+        capture('unknown_sample')
+        unknown_sample = {'conc': 0}
+        unknown_sample['conc'] = get_conc_unknown_sample()
+        conc['text'] = str(unknown_sample['conc'])
+        btn_capture['text'] = 'OK\nRecapture!'
+        btn_capture['bg'] = btn_capture['activebackground'] = btn_capture_ok
+
+    def done():
+        global unknown_sample
+        unknown_sample = None
+        mainScreen()
+
+    Lbl(69, 115, 107, 42, 'Concentration', bg=btn_concentration, font=btn_capture_text)
+    conc = Lbl(69, 165, 107, 42, 'N/A', bg=btn_concentration, font=btn_capture_text)
+    btn_capture = Btn(304, 115, 107, 92, 'Capture', update_conc, bg=btn_capture_no,
+                      font=btn_capture_text)
+    Btn(363, 268, 107, 41, 'Exit', mainScreen, bg=btn_bg, font=btn_capture_text)
+    Btn(10, 268, 107, 41, 'See graph', graph_screen, bg=btn_bg, font=btn_capture_text)
+
+    if unknown_sample is not None:
+        conc['text'] = unknown_sample['conc']
+        btn_capture['text'] = 'OK\nRecapture!'
+        btn_capture['bg'] = btn_capture['activebackground'] = btn_capture_ok
+
+
 InputScreen.prepare()
-mainScreen()
-# graph_screen()
+# mainScreen()
+graph_screen()
 if __name__ == "__main__":
     mainWindow.mainloop()
