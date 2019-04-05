@@ -18,9 +18,6 @@ if mainWindow.winfo_screenwidth() == 480 and mainWindow.winfo_screenheight() == 
     mainWindow.wm_attributes("-fullscreen", True)
 mainWindow.geometry('%dx%d+%d+%d' % (480, 320, 0, 0))
 
-# root.rowconfigure(6, {'minsize': 40})
-# root.columnconfigure(8, {'minsize': 40})
-
 primary_font = tkFont.Font(family='Roboto', size=12)  # , weight='bold')
 main_text = tkFont.Font(family='Roboto', size=14)  # , weight='bold')
 secondary_font_roboto = tkFont.Font(family='Roboto', size=25)
@@ -62,6 +59,20 @@ def capture(file_name):
         os.system('raspistill -q 100 -o ' + str(file_name) + '.jpg')
     else:
         os.system('echo working > ' + str(file_name) + '.txt')
+
+
+def colors_processed():
+    return os.path.isfile('colors.txt')
+
+
+def write_colors(data):
+    with open('colors.txt', 'wb+') as dump:
+        dump.write(json.dumps(data))
+
+
+def read_colors():
+    source = open('colors.txt', 'rb').read()
+    return json.loads(source)
 
 
 def write_conc(data):
@@ -241,7 +252,7 @@ def sampleScreen(number_of_samples=0):
         done_count = samples.count_done()
         title['text'] = 'Capture samples (' + str(done_count) + '/' + str(number_of_samples) + ')'
         if done_count == number_of_samples:
-            Btn(363, 268, 107, 41, 'Save & Continue', done, bg=btn_bg)
+            Btn(363, 268, 107, 41, 'Save & Continue', done, bg=btn_bg, font=btn_capture_text)
 
     title = Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(number_of_samples) + ')')
     samples = SampleCollection(number_of_samples, update_controls)
@@ -250,7 +261,8 @@ def sampleScreen(number_of_samples=0):
     Btn(10, 62, 49, 145, '<', samples.move_left, bg=btn_bg)
 
 
-unknown_sample = None
+unknown_sample = interp_fn = img = figs = None
+current_color = 0
 
 
 def draw_figure(canvas, figure, loc=(0, 0)):
@@ -264,37 +276,49 @@ def draw_figure(canvas, figure, loc=(0, 0)):
     return photo
 
 
-def opencv_test():
+def process_colors(img):
+    img = img[750:1550, 1100:1900]
+    # cv2.imshow("cropped", img)
+    # cv2.waitKey(0)
+    return [np.argmax(cv2.calcHist([img], [i], None, [256], [0, 256])) for i, col in enumerate(('b', 'g', 'r'))]
+
+
+def process_samples():
     conc = read_conc()
     max_rgb = [[], [], []]
     for i in range(len(conc)):
-        img = cv2.imread('pics/pic' + str(i) + '.jpg')
-        img = img[750:1550, 1100:1900]
-        # cv2.imshow("cropped", img)
-        # cv2.waitKey(0)
-        color = ('b', 'g', 'r')
-        for i, col in enumerate(color):
-            hist = cv2.calcHist([img], [i], None, [256], [0, 256])
-            max_rgb[i].append(np.argmax(hist))
+        rgb = process_colors(cv2.imread('pics/pic' + str(i) + '.jpg'))  # todo open images in current test instead
+        max_rgb[0].append(rgb[0])
+        max_rgb[1].append(rgb[1])
+        max_rgb[2].append(rgb[2])
+    write_colors(max_rgb)
+    return max_rgb, conc
 
-    x = conc
-    r = max_rgb[0]
-    g = max_rgb[1]
-    b = max_rgb[2]
-    figs = []
-    for i in [r, g, b]:
+
+def opencv_test():
+    if colors_processed():
+        max_rgb, conc = read_colors(), read_conc()
+    else:
+        max_rgb, conc = process_samples()
+    global interp_fn
+    figs, interp_fn = [], []
+    for i in max_rgb:
+        interp_fn.append(interp1d(i, conc, fill_value="extrapolate"))
         fig = plt.figure(figsize=(4.6, 1.96))
-        fig.add_axes(plt.axes()).scatter(x, i)
+        fig.add_axes(plt.axes()).scatter(i, conc)
         fig.tight_layout()
         figs.append(fig)
     return figs
 
 
 def get_conc_unknown_sample():
-    return 5
-
-
-img = None
+    rgb = process_colors(cv2.imread('pics/pic3.jpg'))  # todo open unknown sample instead
+    conc = []
+    for i in range(3):
+        c = int(interp_fn[i](rgb[i]))
+        conc.append(c)
+        figs[i].axes[0].scatter(rgb[i], c, marker='x')
+    return conc
 
 
 def graph_screen():
@@ -305,15 +329,18 @@ def graph_screen():
         measure_screen()
 
     def color_red():
-        global img
+        global img, current_color
+        current_color = 0
         img = draw_figure(canvas, figs[0])
 
     def color_green():
-        global img
+        global img, current_color
+        current_color = 1
         img = draw_figure(canvas, figs[1])
 
     def color_blue():
-        global img
+        global img, current_color
+        current_color = 2
         img = draw_figure(canvas, figs[2])
 
     Lbl(69, 10, 342, 42, 'Choose most suitable color graph')
@@ -323,7 +350,10 @@ def graph_screen():
     Btn(128, 268, 49, 42, 'Blue', color_blue, bg=btn_blue, font=btn_capture_text)
     canvas = Canvas(root)
     canvas.place(x=10, y=62, width=460, height=196)
-    figs = opencv_test()
+    global figs
+    if img is None:
+        figs = opencv_test()
+    [color_red, color_green, color_blue][current_color]()
 
 
 def measure_screen():
@@ -333,32 +363,31 @@ def measure_screen():
     def update_conc():
         global unknown_sample
         capture('unknown_sample')
-        unknown_sample = {'conc': 0}
-        unknown_sample['conc'] = get_conc_unknown_sample()
-        conc['text'] = str(unknown_sample['conc'])
+        unknown_sample = {'conc': get_conc_unknown_sample()}
+        conc['text'] = str(unknown_sample['conc'][current_color])
         btn_capture['text'] = 'OK\nRecapture!'
         btn_capture['bg'] = btn_capture['activebackground'] = btn_capture_ok
 
     def done():
-        global unknown_sample
-        unknown_sample = None
+        global unknown_sample, img, figs, interp_fn
+        unknown_sample = img = figs = interp_fn = None
         mainScreen()
 
     Lbl(69, 115, 107, 42, 'Concentration', bg=btn_concentration, font=btn_capture_text)
     conc = Lbl(69, 165, 107, 42, 'N/A', bg=btn_concentration, font=btn_capture_text)
     btn_capture = Btn(304, 115, 107, 92, 'Capture', update_conc, bg=btn_capture_no,
                       font=btn_capture_text)
-    Btn(363, 268, 107, 41, 'Exit', mainScreen, bg=btn_bg, font=btn_capture_text)
+    Btn(363, 268, 107, 41, 'Exit', done, bg=btn_bg, font=btn_capture_text)
     Btn(10, 268, 107, 41, 'See graph', graph_screen, bg=btn_bg, font=btn_capture_text)
 
     if unknown_sample is not None:
-        conc['text'] = unknown_sample['conc']
+        conc['text'] = unknown_sample['conc'][current_color]
         btn_capture['text'] = 'OK\nRecapture!'
         btn_capture['bg'] = btn_capture['activebackground'] = btn_capture_ok
 
 
 InputScreen.prepare()
-# mainScreen()
-graph_screen()
+mainScreen()
+# graph_screen()
 if __name__ == "__main__":
     mainWindow.mainloop()
