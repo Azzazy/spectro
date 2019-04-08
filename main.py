@@ -48,9 +48,9 @@ mainWindow['bg'] = background_color
 
 
 def can_capture():
-    cmd = 'if raspistill -n true 2>/dev/null; then \necho 1 \nelse \necho 0 \nfi'
-    if int(os.popen(cmd).readlines()[0]) == 1:
-        return True
+    # cmd = 'if raspistill -n true 2>/dev/null; then \necho 1 \nelse \necho 0 \nfi'
+    # if int(os.popen(cmd).readlines()[0]) == 1:
+    #     return True
     return False
 
 
