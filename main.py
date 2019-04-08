@@ -247,6 +247,7 @@ def sampleScreen(number_of_samples=0):
     def done():
         write_conc(samples.get_conc())
         # graph_screen()
+        mainScreen()
 
     def update_controls():
         done_count = samples.count_done()
