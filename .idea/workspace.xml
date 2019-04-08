@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="758e58a3-c356-4572-b883-214185b957fa" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-    </list>
+    <list default="true" id="758e58a3-c356-4572-b883-214185b957fa" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -12,7 +9,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/spectro$main.coverage" NAME="main Coverage Results" MODIFIED="1554728973503" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/spectro$main.coverage" NAME="main Coverage Results" MODIFIED="1554731919047" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/spectro$opencv.coverage" NAME="opencv Coverage Results" MODIFIED="1553359956187" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
@@ -217,7 +214,7 @@
       <workItem from="1553779868834" duration="17239000" />
       <workItem from="1554381094073" duration="4595000" />
       <workItem from="1554478502653" duration="6599000" />
-      <workItem from="1554726844174" duration="959000" />
+      <workItem from="1554726844174" duration="1579000" />
     </task>
     <task id="LOCAL-00001" summary="capture">
       <created>1553782368002</created>
@@ -268,11 +265,18 @@
       <option name="project" value="LOCAL" />
       <updated>1554729008310</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="test and loop">
+      <created>1554729075038</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1554729075038</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="52455000" />
+    <option name="totallyTimeSpent" value="53075000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="25" width="1920" height="1055" extended-state="6" />
@@ -313,7 +317,8 @@
     <MESSAGE value="unknown sample screen" />
     <MESSAGE value="test without capture" />
     <MESSAGE value="test without opencv" />
-    <option name="LAST_COMMIT_MESSAGE" value="test without opencv" />
+    <MESSAGE value="test and loop" />
+    <option name="LAST_COMMIT_MESSAGE" value="test and loop" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/venv/main.py" />
