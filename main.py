@@ -19,6 +19,7 @@ if mainWindow.winfo_screenwidth() == 480 and mainWindow.winfo_screenheight() == 
 mainWindow.geometry('%dx%d+%d+%d' % (480, 320, 0, 0))
 
 primary_font = tkFont.Font(family='Roboto', size=12)  # , weight='bold')
+big_font = tkFont.Font(family='Roboto', size=24, weight='bold')
 main_text = tkFont.Font(family='Roboto', size=14)  # , weight='bold')
 secondary_font_roboto = tkFont.Font(family='Roboto', size=25)
 small_font_roboto = tkFont.Font(family='Roboto', size=15)
@@ -238,6 +239,7 @@ def mainScreen():
     Btn(69, 113, 107, 94, 'New Test', lambda: InputScreen.get('How many samples?', sampleScreen), bg=btn_bg)
     Btn(186, 113, 107, 94, 'History', None, bg=btn_bg)
     Btn(304, 113, 107, 94, 'Settings', None, bg=btn_bg)
+    Lbl(0, 0, 480, 90, "ToxiSure", font=big_font)
 
 
 def sampleScreen(number_of_samples=0):
@@ -254,6 +256,7 @@ def sampleScreen(number_of_samples=0):
         title['text'] = 'Capture samples (' + str(done_count) + '/' + str(number_of_samples) + ')'
         if done_count == number_of_samples:
             Btn(363, 268, 107, 41, 'Save & Continue', done, bg=btn_bg, font=btn_capture_text)
+
     if number_of_samples == 0:
         mainScreen()
     title = Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(number_of_samples) + ')')
@@ -265,7 +268,6 @@ def sampleScreen(number_of_samples=0):
 
 unknown_sample = interp_fn = img = figs = None
 current_color = 0
-
 
 # def draw_figure(canvas, figure, loc=(0, 0)):
 #     figure_canvas_agg = FigureCanvasAgg(figure)
