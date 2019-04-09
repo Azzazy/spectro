@@ -254,7 +254,8 @@ def sampleScreen(number_of_samples=0):
         title['text'] = 'Capture samples (' + str(done_count) + '/' + str(number_of_samples) + ')'
         if done_count == number_of_samples:
             Btn(363, 268, 107, 41, 'Save & Continue', done, bg=btn_bg, font=btn_capture_text)
-
+    if number_of_samples == 0:
+        mainScreen()
     title = Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(number_of_samples) + ')')
     samples = SampleCollection(number_of_samples, update_controls)
 
