@@ -259,6 +259,7 @@ def sampleScreen(number_of_samples=0):
 
     if number_of_samples == 0:
         mainScreen()
+        return
     title = Lbl(69, 10, 342, 42, 'Capture samples (0/' + str(number_of_samples) + ')')
     samples = SampleCollection(number_of_samples, update_controls)
 
